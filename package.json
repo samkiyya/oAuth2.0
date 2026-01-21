@@ -1,0 +1,77 @@
+{
+  "name": "oauth2-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-ready OAuth 2.0/2.1 Authorization Server with OpenID Connect",
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "pnpm --parallel --filter './auth-server' --filter './client-app' --filter './resource-server' dev",
+    "dev:auth": "pnpm --filter auth-server dev",
+    "dev:client": "pnpm --filter client-app dev",
+    "dev:resource": "pnpm --filter resource-server dev",
+    "build": "pnpm -r build",
+    "build:packages": "pnpm --filter '@oauth2/*' build",
+    "start": "pnpm -r start",
+    "clean": "pnpm -r clean && rimraf node_modules",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\"",
+    "test": "pnpm -r test",
+    "test:unit": "pnpm --filter auth-server test:unit",
+    "test:integration": "pnpm --filter auth-server test:integration",
+    "test:e2e": "pnpm --filter auth-server test:e2e",
+    "test:coverage": "pnpm --filter auth-server test:coverage",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:clean": "docker-compose down -v --rmi local",
+    "prepare": "node -e \"try { require('husky').install() } catch (e) {if (e.code !== 'MODULE_NOT_FOUND') throw e}\"",
+    "audit": "pnpm audit --audit-level=high",
+    "deps:update": "pnpm up -r --latest",
+    "preinstall": "npx only-allow pnpm"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "eslint": "^9.28.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.0",
+    "prettier": "^3.5.3",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yaml,yml}": [
+      "prettier --write"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/oauth2.git"
+  },
+  "keywords": [
+    "oauth",
+    "oauth2",
+    "oauth2.1",
+    "openid",
+    "oidc",
+    "authorization",
+    "authentication",
+    "pkce",
+    "jwt",
+    "rfc6749",
+    "rfc7636"
+  ]
+}

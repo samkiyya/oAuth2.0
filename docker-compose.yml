@@ -1,0 +1,140 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7
+    container_name: oauth2-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminpassword
+      MONGO_INITDB_DATABASE: oauth2
+    volumes:
+      - mongodb_data:/data/db
+      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/init.js:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: oauth2-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass redispassword
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redispassword", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Auth Server
+  auth-server:
+    build:
+      context: ./auth-server
+      target: development
+    container_name: oauth2-auth-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      ISSUER: http://localhost:3000
+      MONGODB_URI: mongodb://oauth2user:oauth2password@mongodb:27017/oauth2?authSource=oauth2
+      REDIS_URL: redis://:redispassword@redis:6379
+      SESSION_SECRET: dev-session-secret-minimum-32-characters-long
+      JWT_ACCESS_TOKEN_EXPIRES_IN: 15m
+      JWT_REFRESH_TOKEN_EXPIRES_IN: 7d
+      JWT_ID_TOKEN_EXPIRES_IN: 1h
+      LOG_LEVEL: debug
+    volumes:
+      - ./auth-server/src:/app/src:ro
+      - ./packages:/app/packages:ro
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Client App
+  client-app:
+    build:
+      context: ./client-app
+      target: development
+    container_name: oauth2-client-app
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      AUTH_SERVER_URL: http://auth-server:3000
+      AUTH_SERVER_PUBLIC_URL: http://localhost:3000
+      RESOURCE_SERVER_URL: http://resource-server:3002
+      CLIENT_ID: demo-client
+      CLIENT_SECRET: demo-secret-change-in-production
+      REDIRECT_URI: http://localhost:3001/callback
+      SESSION_SECRET: client-session-secret-minimum-32-characters-long
+      REDIS_URL: redis://:redispassword@redis:6379
+      LOG_LEVEL: debug
+    volumes:
+      - ./client-app/src:/app/src:ro
+      - ./packages:/app/packages:ro
+    depends_on:
+      - auth-server
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Resource Server
+  resource-server:
+    build:
+      context: ./resource-server
+      target: development
+    container_name: oauth2-resource-server
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      AUTH_SERVER_URL: http://auth-server:3000
+      ISSUER: http://localhost:3000
+      JWKS_URI: http://auth-server:3000/.well-known/jwks.json
+      AUDIENCE: demo-client
+      CORS_ORIGINS: http://localhost:3001,http://localhost:3000
+      REDIS_URL: redis://:redispassword@redis:6379
+      LOG_LEVEL: debug
+    volumes:
+      - ./resource-server/src:/app/src:ro
+      - ./packages:/app/packages:ro
+    depends_on:
+      - auth-server
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  default:
+    name: oauth2-network

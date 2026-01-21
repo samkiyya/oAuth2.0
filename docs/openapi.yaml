@@ -1,0 +1,678 @@
+openapi: 3.1.0
+info:
+  title: OAuth 2.0/2.1 Authorization Server API
+  description: |
+    Production-ready OAuth 2.0/2.1 Authorization Server with OpenID Connect support.
+    
+    ## Features
+    - OAuth 2.0/2.1 compliant with PKCE requirement
+    - OpenID Connect Core 1.0
+    - Token Revocation (RFC 7009)
+    - Token Introspection (RFC 7662)
+    - Dynamic Client Registration (RFC 7591)
+    - Device Authorization Grant (RFC 8628)
+    - Multi-Factor Authentication (TOTP)
+    
+    ## Authentication
+    Most endpoints require either a valid access token or client credentials.
+  version: 1.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://auth.example.com
+    description: Production server
+
+tags:
+  - name: Discovery
+    description: OpenID Connect Discovery endpoints
+  - name: Authorization
+    description: OAuth 2.0 Authorization endpoints
+  - name: Token
+    description: OAuth 2.0 Token management
+  - name: User
+    description: User authentication and info
+  - name: Client
+    description: Client registration and management
+  - name: Device
+    description: Device Authorization Grant (RFC 8628)
+  - name: MFA
+    description: Multi-Factor Authentication
+  - name: Health
+    description: Health check endpoints
+
+paths:
+  /.well-known/openid-configuration:
+    get:
+      tags: [Discovery]
+      summary: OpenID Connect Discovery
+      description: Returns the OpenID Provider Configuration Information
+      operationId: getOpenIDConfiguration
+      responses:
+        '200':
+          description: OpenID Provider Configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenIDConfiguration'
+
+  /.well-known/jwks.json:
+    get:
+      tags: [Discovery]
+      summary: JSON Web Key Set
+      description: Returns the JSON Web Key Set for validating JWTs
+      operationId: getJWKS
+      responses:
+        '200':
+          description: JSON Web Key Set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWKS'
+
+  /authorize:
+    get:
+      tags: [Authorization]
+      summary: Authorization Endpoint
+      description: |
+        Initiates the OAuth 2.0 authorization flow. Redirects user to login
+        if not authenticated, then to consent screen if consent is required.
+      operationId: authorize
+      parameters:
+        - name: response_type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [code]
+          description: Must be 'code' for authorization code flow
+        - name: client_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: redirect_uri
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uri
+        - name: scope
+          in: query
+          schema:
+            type: string
+          description: Space-separated list of scopes
+        - name: state
+          in: query
+          schema:
+            type: string
+          description: Random state for CSRF protection
+        - name: code_challenge
+          in: query
+          required: true
+          schema:
+            type: string
+          description: PKCE code challenge (required by OAuth 2.1)
+        - name: code_challenge_method
+          in: query
+          schema:
+            type: string
+            enum: [S256]
+          description: Must be S256
+        - name: nonce
+          in: query
+          schema:
+            type: string
+          description: Nonce for OpenID Connect
+        - name: prompt
+          in: query
+          schema:
+            type: string
+            enum: [none, login, consent]
+      responses:
+        '302':
+          description: Redirect to login, consent, or callback
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthError'
+
+  /token:
+    post:
+      tags: [Token]
+      summary: Token Endpoint
+      description: Exchange authorization code for tokens, refresh tokens, or get client credentials token
+      operationId: token
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/AuthorizationCodeRequest'
+                - $ref: '#/components/schemas/RefreshTokenRequest'
+                - $ref: '#/components/schemas/ClientCredentialsRequest'
+                - $ref: '#/components/schemas/DeviceCodeRequest'
+      responses:
+        '200':
+          description: Token response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthError'
+        '401':
+          description: Invalid client credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthError'
+
+  /revoke:
+    post:
+      tags: [Token]
+      summary: Token Revocation
+      description: Revoke an access token or refresh token (RFC 7009)
+      operationId: revokeToken
+      security:
+        - clientBasic: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+                  description: The token to revoke
+                token_type_hint:
+                  type: string
+                  enum: [access_token, refresh_token]
+      responses:
+        '200':
+          description: Token revoked (or token not found)
+
+  /introspect:
+    post:
+      tags: [Token]
+      summary: Token Introspection
+      description: Introspect a token to check if it is active (RFC 7662)
+      operationId: introspectToken
+      security:
+        - clientBasic: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+                  description: The token to introspect
+                token_type_hint:
+                  type: string
+                  enum: [access_token, refresh_token]
+      responses:
+        '200':
+          description: Introspection response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntrospectionResponse'
+
+  /userinfo:
+    get:
+      tags: [User]
+      summary: UserInfo Endpoint
+      description: Get claims about the authenticated user
+      operationId: getUserInfo
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User info claims
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoResponse'
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthError'
+
+  /register:
+    post:
+      tags: [Client]
+      summary: Dynamic Client Registration
+      description: Register a new OAuth client (RFC 7591)
+      operationId: registerClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientRegistrationRequest'
+      responses:
+        '201':
+          description: Client registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientRegistrationResponse'
+        '400':
+          description: Invalid registration request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthError'
+
+  /device/code:
+    post:
+      tags: [Device]
+      summary: Device Authorization
+      description: Initiate device authorization flow (RFC 8628)
+      operationId: deviceAuthorization
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [client_id]
+              properties:
+                client_id:
+                  type: string
+                scope:
+                  type: string
+      responses:
+        '200':
+          description: Device authorization response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceAuthorizationResponse'
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Health Check
+      description: Check the health of the service and its dependencies
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /health/live:
+    get:
+      tags: [Health]
+      summary: Liveness Probe
+      description: Kubernetes liveness probe endpoint
+      operationId: livenessProbe
+      responses:
+        '200':
+          description: Service is alive
+
+  /health/ready:
+    get:
+      tags: [Health]
+      summary: Readiness Probe
+      description: Kubernetes readiness probe endpoint
+      operationId: readinessProbe
+      responses:
+        '200':
+          description: Service is ready
+        '503':
+          description: Service is not ready
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token obtained from the token endpoint
+    clientBasic:
+      type: http
+      scheme: basic
+      description: Client ID and secret as username:password
+
+  schemas:
+    OpenIDConfiguration:
+      type: object
+      properties:
+        issuer:
+          type: string
+          format: uri
+        authorization_endpoint:
+          type: string
+          format: uri
+        token_endpoint:
+          type: string
+          format: uri
+        userinfo_endpoint:
+          type: string
+          format: uri
+        jwks_uri:
+          type: string
+          format: uri
+        registration_endpoint:
+          type: string
+          format: uri
+        scopes_supported:
+          type: array
+          items:
+            type: string
+        response_types_supported:
+          type: array
+          items:
+            type: string
+        grant_types_supported:
+          type: array
+          items:
+            type: string
+        code_challenge_methods_supported:
+          type: array
+          items:
+            type: string
+
+    JWKS:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            type: object
+            properties:
+              kty:
+                type: string
+              use:
+                type: string
+              kid:
+                type: string
+              alg:
+                type: string
+              n:
+                type: string
+              e:
+                type: string
+
+    AuthorizationCodeRequest:
+      type: object
+      required: [grant_type, code, redirect_uri, client_id, code_verifier]
+      properties:
+        grant_type:
+          type: string
+          enum: [authorization_code]
+        code:
+          type: string
+        redirect_uri:
+          type: string
+          format: uri
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        code_verifier:
+          type: string
+
+    RefreshTokenRequest:
+      type: object
+      required: [grant_type, refresh_token, client_id]
+      properties:
+        grant_type:
+          type: string
+          enum: [refresh_token]
+        refresh_token:
+          type: string
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        scope:
+          type: string
+
+    ClientCredentialsRequest:
+      type: object
+      required: [grant_type, client_id, client_secret]
+      properties:
+        grant_type:
+          type: string
+          enum: [client_credentials]
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        scope:
+          type: string
+
+    DeviceCodeRequest:
+      type: object
+      required: [grant_type, device_code, client_id]
+      properties:
+        grant_type:
+          type: string
+          enum: ['urn:ietf:params:oauth:grant-type:device_code']
+        device_code:
+          type: string
+        client_id:
+          type: string
+
+    TokenResponse:
+      type: object
+      required: [access_token, token_type, expires_in]
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          enum: [Bearer]
+        expires_in:
+          type: integer
+        refresh_token:
+          type: string
+        scope:
+          type: string
+        id_token:
+          type: string
+
+    IntrospectionResponse:
+      type: object
+      required: [active]
+      properties:
+        active:
+          type: boolean
+        scope:
+          type: string
+        client_id:
+          type: string
+        username:
+          type: string
+        token_type:
+          type: string
+        exp:
+          type: integer
+        iat:
+          type: integer
+        sub:
+          type: string
+        aud:
+          type: string
+        iss:
+          type: string
+        jti:
+          type: string
+
+    UserInfoResponse:
+      type: object
+      properties:
+        sub:
+          type: string
+        email:
+          type: string
+          format: email
+        email_verified:
+          type: boolean
+        name:
+          type: string
+        given_name:
+          type: string
+        family_name:
+          type: string
+        picture:
+          type: string
+          format: uri
+        locale:
+          type: string
+        updated_at:
+          type: integer
+
+    ClientRegistrationRequest:
+      type: object
+      required: [redirect_uris, client_name]
+      properties:
+        redirect_uris:
+          type: array
+          items:
+            type: string
+            format: uri
+        client_name:
+          type: string
+        grant_types:
+          type: array
+          items:
+            type: string
+        token_endpoint_auth_method:
+          type: string
+          enum: [client_secret_basic, client_secret_post, none]
+        scope:
+          type: string
+        logo_uri:
+          type: string
+          format: uri
+        policy_uri:
+          type: string
+          format: uri
+        tos_uri:
+          type: string
+          format: uri
+        contacts:
+          type: array
+          items:
+            type: string
+            format: email
+
+    ClientRegistrationResponse:
+      type: object
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        client_id_issued_at:
+          type: integer
+        client_secret_expires_at:
+          type: integer
+        client_name:
+          type: string
+        redirect_uris:
+          type: array
+          items:
+            type: string
+        grant_types:
+          type: array
+          items:
+            type: string
+        token_endpoint_auth_method:
+          type: string
+
+    DeviceAuthorizationResponse:
+      type: object
+      properties:
+        device_code:
+          type: string
+        user_code:
+          type: string
+        verification_uri:
+          type: string
+          format: uri
+        verification_uri_complete:
+          type: string
+          format: uri
+        expires_in:
+          type: integer
+        interval:
+          type: integer
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        uptime:
+          type: number
+        checks:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+              latency:
+                type: number
+
+    OAuthError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          enum:
+            - invalid_request
+            - invalid_client
+            - invalid_grant
+            - invalid_scope
+            - unauthorized_client
+            - unsupported_grant_type
+            - invalid_token
+            - insufficient_scope
+            - access_denied
+            - server_error
+        error_description:
+          type: string
+        error_uri:
+          type: string
+          format: uri
