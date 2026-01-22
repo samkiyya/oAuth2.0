@@ -2,7 +2,6 @@ import type { Request, Response, NextFunction } from 'express';
 import { clientService } from '../services/client.service.js';
 import { authorizationService } from '../services/authorization.service.js';
 import { OAuthErrors } from '@oauth2/shared-utils';
-import { logger } from '../utils/logger.js';
 
 /**
  * Authorization endpoint
@@ -51,7 +50,7 @@ export async function authorize(
         const scopes = clientService.validateScope(client, params.scope);
 
         // User must be logged in
-        if (!req.session.userId || !req.user) {
+        if (!req.session.userId || !(req as any).user) {
             // Store pending auth and redirect to login
             req.session.pendingAuth = {
                 clientId: params.clientId,
@@ -66,7 +65,7 @@ export async function authorize(
             return;
         }
 
-        const user = req.user;
+        const user = (req as any).user;
 
         // Check if prompt=none
         if (params.prompt === 'none') {
@@ -183,12 +182,12 @@ export async function handleConsent(
     try {
         const { action, clientId, redirectUri, scope, state, codeChallenge, codeChallengeMethod, nonce } = req.body;
 
-        if (!req.user) {
+        if (!(req as any).user) {
             res.redirect('/login');
             return;
         }
 
-        const user = req.user;
+        const user = (req as any).user;
         const client = await clientService.validateClientForAuthorization(clientId);
         clientService.validateRedirectUri(client, redirectUri);
         const scopes = clientService.validateScope(client, scope);

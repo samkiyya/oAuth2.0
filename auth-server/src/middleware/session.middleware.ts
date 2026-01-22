@@ -3,7 +3,7 @@ import type { Request, Response, NextFunction } from 'express';
 /**
  * Load user from session if present
  */
-export function loadUser(req: Request, res: Response, next: NextFunction): void {
+export function loadUser(_req: Request, _res: Response, next: NextFunction): void {
     // User is loaded from session automatically by express-session
     // This middleware just continues
     next();
@@ -15,7 +15,6 @@ export function loadUser(req: Request, res: Response, next: NextFunction): void 
 export function requireSession(req: Request, res: Response, next: NextFunction): void {
     if (!req.session.userId) {
         const returnUrl = req.originalUrl;
-        req.session.pendingAuth = req.session.pendingAuth ?? undefined;
         res.redirect(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
         return;
     }

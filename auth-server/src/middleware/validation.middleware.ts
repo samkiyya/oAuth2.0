@@ -8,7 +8,7 @@ type RequestPart = 'body' | 'query' | 'params';
  * Validation middleware factory
  */
 export function validate(schema: ZodSchema, source: RequestPart = 'body') {
-    return (req: Request, res: Response, next: NextFunction): void => {
+    return (req: Request, _res: Response, next: NextFunction): void => {
         const data = req[source];
         const result = schema.safeParse(data);
 
@@ -33,7 +33,7 @@ export function validate(schema: ZodSchema, source: RequestPart = 'body') {
  * Validate multiple sources
  */
 export function validateMultiple(schemas: { [K in RequestPart]?: ZodSchema }) {
-    return (req: Request, res: Response, next: NextFunction): void => {
+    return (req: Request, _res: Response, next: NextFunction): void => {
         const allErrors: { field: string; message: string; code: string }[] = [];
 
         for (const [source, schema] of Object.entries(schemas) as [RequestPart, ZodSchema][]) {

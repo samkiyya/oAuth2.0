@@ -7,7 +7,7 @@ import {
 import { registrationRateLimiter } from '../middleware/rateLimit.middleware.js';
 import { noCacheMiddleware } from '../middleware/security.middleware.js';
 
-const router = Router();
+const router: Router = Router();
 
 // Dynamic Client Registration (RFC 7591)
 router.post('/register', noCacheMiddleware, registrationRateLimiter, registerClient);

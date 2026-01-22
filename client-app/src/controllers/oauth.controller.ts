@@ -8,11 +8,11 @@ const logger = createLogger({ name: 'oauth-controller' });
 // Extend session data
 declare module 'express-session' {
     interface SessionData {
-        codeVerifier?: string;
-        state?: string;
-        nonce?: string;
-        tokens?: TokenData;
-        user?: UserData;
+        codeVerifier?: string | undefined;
+        state?: string | undefined;
+        nonce?: string | undefined;
+        tokens?: TokenData | undefined;
+        user?: UserData | undefined;
     }
 }
 
@@ -170,15 +170,16 @@ export async function dashboard(req: Request, res: Response, next: NextFunction)
             }
         }
 
+        const tokens = req.session.tokens!;
         res.render('dashboard', {
             user: req.session.user,
             tokens: {
-                accessToken: `${req.session.tokens.accessToken.substring(0, 50)}...`,
-                refreshToken: req.session.tokens.refreshToken
-                    ? `${req.session.tokens.refreshToken.substring(0, 20)}...`
+                accessToken: `${tokens.accessToken.substring(0, 50)}...`,
+                refreshToken: tokens.refreshToken
+                    ? `${tokens.refreshToken.substring(0, 20)}...`
                     : null,
-                expiresIn: Math.max(0, Math.floor((req.session.tokens.expiresAt - Date.now()) / 1000)),
-                scope: req.session.tokens.scope,
+                expiresIn: Math.max(0, Math.floor((tokens.expiresAt - Date.now()) / 1000)),
+                scope: tokens.scope,
             },
         });
     } catch (error) {

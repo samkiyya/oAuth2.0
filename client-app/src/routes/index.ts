@@ -8,7 +8,7 @@ import {
     logout,
 } from '../controllers/oauth.controller.js';
 
-const router = Router();
+const router: Router = Router();
 
 // Public routes
 router.get('/', home);

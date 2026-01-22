@@ -80,7 +80,7 @@ export function getRegister(req: Request, res: Response): void {
 export async function postRegister(
     req: Request,
     res: Response,
-    next: NextFunction
+    _next: NextFunction
 ): Promise<void> {
     try {
         const validation = userRegistrationSchema.safeParse(req.body);
@@ -153,7 +153,7 @@ export async function getUserInfo(
     next: NextFunction
 ): Promise<void> {
     try {
-        if (!req.user) {
+        if (!(req as any).user) {
             res.status(401).json({
                 error: 'invalid_token',
                 error_description: 'Access token is required',
@@ -161,7 +161,7 @@ export async function getUserInfo(
             return;
         }
 
-        const user = req.user;
+        const user = (req as any).user;
 
         // Return claims based on scope (simplified - in production, check token scope)
         res.json({

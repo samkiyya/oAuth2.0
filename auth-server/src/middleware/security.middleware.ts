@@ -76,7 +76,7 @@ export function correlationMiddleware(req: Request, res: Response, next: NextFun
 /**
  * Prevent caching of sensitive responses
  */
-export function noCacheMiddleware(req: Request, res: Response, next: NextFunction): void {
+export function noCacheMiddleware(_req: Request, res: Response, next: NextFunction): void {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');

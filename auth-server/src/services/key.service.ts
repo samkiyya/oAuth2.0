@@ -1,6 +1,6 @@
 import * as jose from 'jose';
 import { ObjectId } from 'mongodb';
-import type { SigningKey, AccessTokenClaims, IDTokenClaims } from '@oauth2/shared-types';
+import type { SigningKey, AccessTokenClaims } from '@oauth2/shared-types';
 import { generateSecureRandomString, generateTokenId, generateTokenHash } from '@oauth2/shared-utils';
 import { getCollections } from '../config/database.js';
 import { cache, RedisKeys } from '../config/redis.js';
@@ -143,16 +143,16 @@ export class KeyService {
     async signIdToken(claims: {
         sub: string;
         clientId: string;
-        nonce?: string;
-        authTime?: number;
-        accessToken?: string;
-        code?: string;
+        nonce?: string | undefined;
+        authTime?: number | undefined;
+        accessToken?: string | undefined;
+        code?: string | undefined;
         profile?: {
-            name?: string;
-            email?: string;
-            emailVerified?: boolean;
-            picture?: string;
-        };
+            name?: string | undefined;
+            email?: string | undefined;
+            emailVerified?: boolean | undefined;
+            picture?: string | undefined;
+        } | undefined;
         requestedScopes: string[];
     }): Promise<string> {
         const key = await this.getActiveKey();

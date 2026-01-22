@@ -1,5 +1,5 @@
 import type { User, CreateUserInput } from '@oauth2/shared-types';
-import { OAuthErrors, ConflictError, UnauthorizedError, NotFoundError } from '@oauth2/shared-utils';
+import { ConflictError, UnauthorizedError, NotFoundError } from '@oauth2/shared-utils';
 import { userRepository } from '../repositories/user.repository.js';
 import { tokenRepository } from '../repositories/token.repository.js';
 import { logger, logSecurityEvent } from '../utils/logger.js';
@@ -40,7 +40,7 @@ export class UserService {
     /**
      * Authenticate user with email and password
      */
-    async authenticate(email: string, password: string, ipAddress?: string): Promise<User> {
+    async authenticate(email: string, password: string, ipAddress?: string | undefined): Promise<User> {
         const user = await userRepository.findByEmail(email);
 
         if (!user) {
@@ -175,7 +175,7 @@ export class UserService {
     /**
      * Logout user (revoke all tokens)
      */
-    async logout(userId: string, clientId?: string): Promise<void> {
+    async logout(userId: string, clientId?: string | undefined): Promise<void> {
         const user = await userRepository.findById(userId);
         if (!user) {
             throw new NotFoundError('User', userId);

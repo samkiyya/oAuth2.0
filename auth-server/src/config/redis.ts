@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { createLogger } from '@oauth2/shared-utils';
 import config from './index.js';
 

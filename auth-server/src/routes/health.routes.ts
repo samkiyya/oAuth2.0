@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { healthCheck, livenessProbe, readinessProbe } from '../controllers/health.controller.js';
 
-const router = Router();
+const router: Router = Router();
 
 // Health check endpoints
 router.get('/health', healthCheck);

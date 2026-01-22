@@ -2,7 +2,7 @@ import { Router } from 'express';
 import v1Routes from './v1/index.js';
 import { healthCheck, livenessProbe, readinessProbe } from '../controllers/resource.controller.js';
 
-const router = Router();
+const router: Router = Router();
 
 // Health checks (no auth required)
 router.get('/health', healthCheck);

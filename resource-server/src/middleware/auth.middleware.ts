@@ -1,23 +1,30 @@
 import type { Request, Response, NextFunction } from 'express';
 import * as jose from 'jose';
-import { createLogger, OAuthErrors } from '@oauth2/shared-utils';
+import { createLogger } from '@oauth2/shared-utils';
+import type { AccessTokenClaims } from '@oauth2/shared-types';
 import config from '../config/index.js';
 
 const logger = createLogger({ name: 'auth-middleware' });
+
+/**
+ * Authenticated user info from JWT token
+ * Derived from AccessTokenClaims with additional extracted fields
+ */
+export interface AuthenticatedUser {
+    sub: string;
+    scope: string;
+    clientId: string;
+    email?: string | undefined;
+    name?: string | undefined;
+    iat?: number | undefined;
+    exp?: number | undefined;
+}
 
 // Extend Express Request
 declare global {
     namespace Express {
         interface Request {
-            user?: {
-                sub: string;
-                scope: string;
-                clientId: string;
-                email?: string;
-                name?: string;
-                iat?: number;
-                exp?: number;
-            };
+            user?: AuthenticatedUser | undefined;
         }
     }
 }
@@ -86,15 +93,16 @@ export async function requireAuth(
             audience: config.auth.audience,
         });
 
-        // Populate user info on request
+        // Populate user info on request using AccessTokenClaims structure
+        const claims = payload as Partial<AccessTokenClaims> & Record<string, unknown>;
         req.user = {
-            sub: payload.sub ?? '',
-            scope: (payload.scope as string) ?? '',
-            clientId: (payload.client_id as string) ?? (payload.aud as string),
-            email: payload.email as string | undefined,
-            name: payload.name as string | undefined,
-            iat: payload.iat,
-            exp: payload.exp,
+            sub: claims.sub ?? '',
+            scope: (claims.scope as string) ?? '',
+            clientId: claims.client_id ?? (claims.aud as string) ?? '',
+            email: claims.email as string | undefined,
+            name: claims.name as string | undefined,
+            iat: claims.iat,
+            exp: claims.exp,
         };
 
         logger.debug({ sub: req.user.sub, scope: req.user.scope }, 'Token validated');

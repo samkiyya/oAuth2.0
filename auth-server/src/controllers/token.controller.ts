@@ -6,7 +6,6 @@ import { authorizationService } from '../services/authorization.service.js';
 import { tokenService } from '../services/token.service.js';
 import { deviceTokenExchange } from './device.controller.js';
 import { OAuthErrors } from '@oauth2/shared-utils';
-import { logger } from '../utils/logger.js';
 
 const DEVICE_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:device_code';
 
@@ -37,7 +36,7 @@ export async function token(
             throw OAuthErrors.invalidClient('client_id is required');
         }
 
-        const grantType = req.body.grant_type as string;
+        const grantType = req.body.grant_type as GrantType;
 
         // Handle Device Authorization Grant specially
         if (grantType === DEVICE_GRANT_TYPE) {
@@ -94,7 +93,7 @@ export async function token(
         const tokenRequest = validation.data;
 
         // Handle different grant types
-        switch (tokenRequest.grant_type as GrantType) {
+        switch (tokenRequest.grant_type) {
             case 'authorization_code': {
                 const client = await clientService.validateClient(clientId, clientSecret);
                 clientService.validateGrantType(client, 'authorization_code');
@@ -146,7 +145,7 @@ export async function token(
             }
 
             default:
-                throw OAuthErrors.unsupportedGrantType(tokenRequest.grant_type);
+                throw OAuthErrors.unsupportedGrantType((tokenRequest as any).grant_type);
         }
     } catch (error) {
         next(error);

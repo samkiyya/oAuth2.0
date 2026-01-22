@@ -40,7 +40,7 @@ export async function getClientConfiguration(
         const { clientId } = req.params;
 
         // In production, this should require authentication
-        const client = await clientService.getClient(clientId);
+        const client = await clientService.getClient(clientId as string);
 
         res.json({
             client_id: client.clientId,
@@ -73,12 +73,12 @@ export async function rotateClientSecret(
 
         // Verify current secret before rotation
         if (currentSecret) {
-            await clientService.validateClient(clientId, currentSecret);
+            await clientService.validateClient(clientId as string, currentSecret);
         } else {
             throw OAuthErrors.invalidClient('Current client_secret is required');
         }
 
-        const result = await clientService.rotateClientSecret(clientId);
+        const result = await clientService.rotateClientSecret(clientId as string);
 
         res.json({
             client_id: result.clientId,

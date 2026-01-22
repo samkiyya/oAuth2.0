@@ -29,10 +29,10 @@ export class TokenRepository {
         userId: ObjectId;
         redirectUri: string;
         scope: string;
-        codeChallenge?: string;
-        codeChallengeMethod?: string;
-        nonce?: string;
-        state?: string;
+        codeChallenge?: string | undefined;
+        codeChallengeMethod?: string | undefined;
+        nonce?: string | undefined;
+        state?: string | undefined;
         expiresIn: number;
     }): Promise<string> {
         const code = generateSecureRandomString(32);
@@ -109,8 +109,8 @@ export class TokenRepository {
         clientId: string;
         scope: string;
         expiresIn: number;
-        family?: string;
-        rotatedFromId?: ObjectId;
+        family?: string | undefined;
+        rotatedFromId?: ObjectId | undefined;
     }): Promise<string> {
         const token = generateSecureRandomString(48);
         const tokenHash = hashToken(token);
@@ -242,6 +242,7 @@ export class TokenRepository {
         clientId: string;
         scope: string;
         expiresIn: number;
+        revokedAt?: Date | undefined;
     }): Promise<void> {
         const now = new Date();
 

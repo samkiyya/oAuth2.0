@@ -3,7 +3,7 @@ import { token, revoke, introspect } from '../controllers/token.controller.js';
 import { tokenRateLimiter } from '../middleware/rateLimit.middleware.js';
 import { noCacheMiddleware } from '../middleware/security.middleware.js';
 
-const router = Router();
+const router: Router = Router();
 
 // Token endpoint
 router.post('/token', noCacheMiddleware, tokenRateLimiter, token);

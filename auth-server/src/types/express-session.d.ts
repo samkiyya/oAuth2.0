@@ -5,30 +5,30 @@ import type { AuthorizationRequest } from '@oauth2/shared-types';
 declare module 'express-session' {
     interface SessionData {
         // User identification
-        userId?: string;
-        authTime?: number;
+        userId?: string | undefined;
+        authTime?: number | undefined;
 
         // MFA state
-        pendingMFAUserId?: string;
-        pendingMFASecret?: string;
+        pendingMFAUserId?: string | undefined;
+        pendingMFASecret?: string | undefined;
 
         // Device flow
-        pendingDeviceCode?: string;
+        pendingDeviceCode?: string | undefined;
 
         // Authorization flow
         pendingAuth?: {
             clientId: string;
             redirectUri: string;
             scope: string;
-            state?: string;
-            codeChallenge?: string;
-            codeChallengeMethod?: string;
-            nonce?: string;
-            responseType: string;
-            prompt?: string;
-        };
+            state?: string | undefined;
+            codeChallenge?: string | undefined;
+            codeChallengeMethod?: string | undefined;
+            nonce?: string | undefined;
+            responseType?: string | undefined;
+            prompt?: string | undefined;
+        } | undefined;
 
         // CSRF state
-        csrfSecret?: string;
+        csrfSecret?: string | undefined;
     }
 }

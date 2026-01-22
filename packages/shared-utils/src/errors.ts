@@ -4,13 +4,13 @@ import type { OAuthErrorCode, HttpStatusCode } from '@oauth2/shared-types';
  * Base application error
  */
 export class AppError extends Error {
-    public readonly statusCode: number;
+    public readonly statusCode: HttpStatusCode;
     public readonly isOperational: boolean;
-    public readonly details?: Record<string, unknown>;
+    public readonly details: Record<string, unknown> | undefined;
 
     constructor(
         message: string,
-        statusCode: number = 500,
+        statusCode: HttpStatusCode = 500,
         isOperational: boolean = true,
         details?: Record<string, unknown>
     ) {
@@ -28,13 +28,13 @@ export class AppError extends Error {
  */
 export class OAuthError extends AppError {
     public readonly error: OAuthErrorCode;
-    public readonly errorDescription?: string;
-    public readonly errorUri?: string;
+    public readonly errorDescription: string | undefined;
+    public readonly errorUri: string | undefined;
 
     constructor(
         error: OAuthErrorCode,
         errorDescription?: string,
-        statusCode: number = 400,
+        statusCode: HttpStatusCode = 400,
         errorUri?: string
     ) {
         super(errorDescription ?? error, statusCode);

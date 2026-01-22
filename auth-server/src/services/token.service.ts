@@ -1,11 +1,10 @@
 import { ObjectId } from 'mongodb';
-import type { TokenResponse, OAuthClient, User, GrantType } from '@oauth2/shared-types';
+import type { TokenResponse, OAuthClient, User } from '@oauth2/shared-types';
 import { OAuthErrors } from '@oauth2/shared-utils';
 import { tokenRepository } from '../repositories/token.repository.js';
 import { userRepository } from '../repositories/user.repository.js';
 import { keyService } from './key.service.js';
 import { clientService } from './client.service.js';
-import config from '../config/index.js';
 import { logger, logSecurityEvent } from '../utils/logger.js';
 import { cache, RedisKeys } from '../config/redis.js';
 
@@ -20,7 +19,7 @@ export class TokenService {
         userId: ObjectId;
         clientId: string;
         scope: string;
-        nonce?: string;
+        nonce?: string | undefined;
     }): Promise<TokenResponse> {
         const user = await userRepository.findById(params.userId);
         if (!user) {
@@ -40,12 +39,12 @@ export class TokenService {
         user: User,
         client: OAuthClient,
         scopes: string[],
-        nonce?: string
+        nonce?: string | undefined
     ): Promise<TokenResponse> {
         const scope = scopes.join(' ');
 
         // Generate access token
-        const { token: accessToken, jti, expiresAt } = await keyService.signAccessToken({
+        const { token: accessToken, jti } = await keyService.signAccessToken({
             sub: user._id.toString(),
             clientId: client.clientId,
             scope,
@@ -246,7 +245,7 @@ export class TokenService {
         const scope = scopes.join(' ');
 
         // Generate access token (no user, client is the subject)
-        const { token: accessToken, jti } = await keyService.signAccessToken({
+        const { token: accessToken } = await keyService.signAccessToken({
             sub: client.clientId,
             clientId: client.clientId,
             scope,
@@ -326,19 +325,19 @@ export class TokenService {
      */
     async introspectToken(
         token: string,
-        tokenTypeHint?: 'access_token' | 'refresh_token'
+        tokenTypeHint?: 'access_token' | 'refresh_token' | undefined
     ): Promise<{
         active: boolean;
-        scope?: string;
-        client_id?: string;
-        username?: string;
-        token_type?: string;
-        exp?: number;
-        iat?: number;
-        sub?: string;
-        aud?: string;
-        iss?: string;
-        jti?: string;
+        scope?: string | undefined;
+        client_id?: string | undefined;
+        username?: string | undefined;
+        token_type?: string | undefined;
+        exp?: number | undefined;
+        iat?: number | undefined;
+        sub?: string | undefined;
+        aud?: string | string[] | undefined;
+        iss?: string | undefined;
+        jti?: string | undefined;
     }> {
         const inactiveResponse = { active: false };
 

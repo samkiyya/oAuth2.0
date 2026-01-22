@@ -1,9 +1,9 @@
-import express from 'express';
+import express, { Express } from 'express';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import pinoHttp from 'pino-http';
+import { pinoHttp } from 'pino-http';
 import config from './config/index.js';
 import routes from './routes/index.js';
 import { logger } from './utils/logger.js';
@@ -18,7 +18,7 @@ import { errorMiddleware, notFoundHandler } from './middleware/error.middleware.
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
+const app: Express = express();
 
 // Trust proxy (for rate limiting behind load balancer)
 app.set('trust proxy', 1);

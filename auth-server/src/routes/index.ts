@@ -8,7 +8,7 @@ import healthRoutes from './health.routes.js';
 import deviceRoutes from './device.routes.js';
 import mfaRoutes from './mfa.routes.js';
 
-const router = Router();
+const router: Router = Router();
 
 // Health checks (no rate limiting)
 router.use('/', healthRoutes);

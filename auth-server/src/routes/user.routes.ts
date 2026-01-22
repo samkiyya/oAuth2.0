@@ -11,7 +11,7 @@ import { authRateLimiter, registrationRateLimiter } from '../middleware/rateLimi
 import { requireNoSession, loadUser } from '../middleware/session.middleware.js';
 import { noCacheMiddleware } from '../middleware/security.middleware.js';
 
-const router = Router();
+const router: Router = Router();
 
 // Login
 router.get('/login', noCacheMiddleware, requireNoSession, getLogin);

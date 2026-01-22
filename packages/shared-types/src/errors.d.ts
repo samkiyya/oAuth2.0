@@ -1,5 +1,4 @@
 import type { OAuthErrorCode } from './oauth.js';
-
 /**
  * Base API Error
  */
@@ -12,7 +11,6 @@ export interface APIError {
     path?: string;
     correlationId?: string;
 }
-
 /**
  * OAuth 2.0 Error with RFC-compliant fields
  */
@@ -21,7 +19,6 @@ export interface OAuthError extends APIError {
     error_description?: string;
     error_uri?: string;
 }
-
 /**
  * Validation Error
  */
@@ -33,7 +30,6 @@ export interface ValidationError extends APIError {
         code: string;
     }[];
 }
-
 /**
  * Rate Limit Error
  */
@@ -41,23 +37,22 @@ export interface RateLimitError extends APIError {
     error: 'rate_limit_exceeded';
     retryAfter: number;
 }
-
 /**
  * HTTP Status Codes commonly used
  */
-export const HttpStatus = {
-    OK: 200,
-    CREATED: 201,
-    NO_CONTENT: 204,
-    BAD_REQUEST: 400,
-    UNAUTHORIZED: 401,
-    FORBIDDEN: 403,
-    NOT_FOUND: 404,
-    CONFLICT: 409,
-    UNPROCESSABLE_ENTITY: 422,
-    TOO_MANY_REQUESTS: 429,
-    INTERNAL_SERVER_ERROR: 500,
-    SERVICE_UNAVAILABLE: 503,
-} as const;
-
+export declare const HttpStatus: {
+    readonly OK: 200;
+    readonly CREATED: 201;
+    readonly NO_CONTENT: 204;
+    readonly BAD_REQUEST: 400;
+    readonly UNAUTHORIZED: 401;
+    readonly FORBIDDEN: 403;
+    readonly NOT_FOUND: 404;
+    readonly CONFLICT: 409;
+    readonly UNPROCESSABLE_ENTITY: 422;
+    readonly TOO_MANY_REQUESTS: 429;
+    readonly INTERNAL_SERVER_ERROR: 500;
+    readonly SERVICE_UNAVAILABLE: 503;
+};
 export type HttpStatusCode = (typeof HttpStatus)[keyof typeof HttpStatus];
+//# sourceMappingURL=errors.d.ts.map

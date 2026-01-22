@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import pinoHttp from 'pino-http';
+import { pinoHttp } from 'pino-http';
 import { createLogger } from '@oauth2/shared-utils';
 import config from './config/index.js';
 import routes from './routes/index.js';
@@ -32,21 +32,25 @@ export function createApp(): express.Application {
 
     // Request logging
     app.use(
-        pinoHttp({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (pinoHttp({
             logger,
-            genReqId: (req) => req.headers['x-request-id'] as string ?? crypto.randomUUID(),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            genReqId: (req: any) => req.headers?.get?.('x-request-id') ?? req.headers?.['x-request-id'] ?? crypto.randomUUID(),
             autoLogging: {
-                ignore: (req) => req.url === '/health' || req.url === '/health/live',
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ignore: (req: any) => req.url === '/health' || req.url === '/health/live',
             },
-        })
+        }) as any)
     );
 
     // Body parsing
     app.use(express.json({ limit: '10kb' }));
 
     // Add request ID to response
-    app.use((req, res, next) => {
-        res.setHeader('X-Request-ID', req.id ?? '');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    app.use((req: any, res, next) => {
+        res.setHeader('X-Request-ID', String(req.id ?? ''));
         next();
     });
 
@@ -64,7 +68,8 @@ export function createApp(): express.Application {
     });
 
     // Error handler
-    app.use((err: Error & { statusCode?: number }, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    app.use((err: Error & { statusCode?: number }, req: any, res: express.Response, _next: express.NextFunction) => {
         logger.error({ error: err, path: req.path, requestId: req.id }, 'Request error');
 
         const statusCode = err.statusCode ?? 500;

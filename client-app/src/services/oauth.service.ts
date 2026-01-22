@@ -11,21 +11,26 @@ import config from '../config/index.js';
 
 const logger = createLogger({ name: 'oauth-service' });
 
-// Session token data
+/**
+ * Session token data - matches TokenResponse from shared-types
+ * but stored with camelCase for session storage
+ */
 export interface TokenData {
     accessToken: string;
-    refreshToken?: string;
-    idToken?: string;
+    refreshToken?: string | undefined;
+    idToken?: string | undefined;
     expiresAt: number;
     scope: string;
 }
 
-// User data from ID token or userinfo
+/**
+ * User data from ID token or userinfo - simplified StandardClaims
+ */
 export interface UserData {
     sub: string;
-    email?: string;
-    name?: string;
-    picture?: string;
+    email?: string | undefined;
+    name?: string | undefined;
+    picture?: string | undefined;
 }
 
 /**

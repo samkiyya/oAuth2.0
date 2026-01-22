@@ -4,7 +4,6 @@ import { clientService } from '../services/client.service.js';
 import { tokenService } from '../services/token.service.js';
 import { userRepository } from '../repositories/user.repository.js';
 import { OAuthErrors } from '@oauth2/shared-utils';
-import { logger } from '../utils/logger.js';
 
 /**
  * Device Authorization endpoint
@@ -148,19 +147,14 @@ export async function authorizeDevice(
  * Device token endpoint
  * POST /token (grant_type=urn:ietf:params:oauth:grant-type:device_code)
  */
+import type { TokenResponse } from '@oauth2/shared-types';
+
 export async function deviceTokenExchange(
     deviceCode: string,
     clientId: string
 ): Promise<{
     status: 'success' | 'authorization_pending' | 'slow_down' | 'access_denied' | 'expired_token';
-    tokens?: {
-        access_token: string;
-        token_type: string;
-        expires_in: number;
-        refresh_token?: string;
-        scope?: string;
-        id_token?: string;
-    };
+    tokens?: TokenResponse;
 }> {
     const pollResult = await deviceFlowService.pollDeviceCode(deviceCode, clientId);
 
@@ -178,14 +172,7 @@ export async function deviceTokenExchange(
 
             return {
                 status: 'success',
-                tokens: {
-                    access_token: tokens.access_token,
-                    token_type: tokens.token_type,
-                    expires_in: tokens.expires_in,
-                    refresh_token: tokens.refresh_token,
-                    scope: tokens.scope,
-                    id_token: tokens.id_token,
-                },
+                tokens,
             };
 
         case 'pending':

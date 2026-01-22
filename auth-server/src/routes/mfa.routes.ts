@@ -10,7 +10,7 @@ import {
 import { requireSession } from '../middleware/session.middleware.js';
 import { noCacheMiddleware } from '../middleware/security.middleware.js';
 
-const router = Router();
+const router: Router = Router();
 
 // MFA setup (requires auth)
 router.get('/mfa/setup', noCacheMiddleware, requireSession, getMFASetup);

@@ -3,7 +3,7 @@ import { authorize, handleConsent } from '../controllers/authorization.controlle
 import { loadUser } from '../middleware/session.middleware.js';
 import { noCacheMiddleware } from '../middleware/security.middleware.js';
 
-const router = Router();
+const router: Router = Router();
 
 // Authorization endpoint
 router.get('/authorize', noCacheMiddleware, loadUser, authorize);

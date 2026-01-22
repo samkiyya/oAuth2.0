@@ -1,115 +1,107 @@
 import type { ObjectId } from 'mongodb';
 import type { GrantType, TokenEndpointAuthMethod } from './oauth.js';
-
 /**
  * User entity stored in database
  */
 export interface User {
     _id: ObjectId;
     email: string;
-    username?: string | undefined;
+    username?: string;
     passwordHash: string;
     profile: UserProfile;
     emailVerified: boolean;
     mfaEnabled: boolean;
-    mfaSecret?: string | undefined;
-    lastLoginAt?: Date | undefined;
+    mfaSecret?: string;
+    lastLoginAt?: Date;
     failedLoginAttempts: number;
-    lockedUntil?: Date | undefined;
+    lockedUntil?: Date;
     createdAt: Date;
     updatedAt: Date;
 }
-
 /**
  * User profile information
  */
 export interface UserProfile {
-    name?: string | undefined;
-    givenName?: string | undefined;
-    familyName?: string | undefined;
-    picture?: string | undefined;
-    locale?: string | undefined;
-    zoneinfo?: string | undefined;
+    name?: string;
+    givenName?: string;
+    familyName?: string;
+    picture?: string;
+    locale?: string;
+    zoneinfo?: string;
 }
-
 /**
  * User creation input
  */
 export interface CreateUserInput {
     email: string;
-    username?: string | undefined;
+    username?: string;
     password: string;
-    profile?: Partial<UserProfile> | undefined;
+    profile?: Partial<UserProfile>;
 }
-
 /**
  * User update input
  */
 export interface UpdateUserInput {
-    email?: string | undefined;
-    username?: string | undefined;
-    profile?: Partial<UserProfile> | undefined;
+    email?: string;
+    username?: string;
+    profile?: Partial<UserProfile>;
 }
-
 /**
  * OAuth 2.0 Client entity
  */
 export interface OAuthClient {
     _id: ObjectId;
     clientId: string;
-    clientSecretHash?: string | undefined;
+    clientSecretHash?: string;
     clientName: string;
-    clientDescription?: string | undefined;
+    clientDescription?: string;
     clientType: 'confidential' | 'public';
     redirectUris: string[];
-    postLogoutRedirectUris?: string[] | undefined;
+    postLogoutRedirectUris?: string[];
     allowedScopes: string[];
     allowedGrantTypes: GrantType[];
     tokenEndpointAuthMethod: TokenEndpointAuthMethod;
-    logoUri?: string | undefined;
-    policyUri?: string | undefined;
-    tosUri?: string | undefined;
-    contacts?: string[] | undefined;
-    defaultMaxAge?: number | undefined;
-    requireAuthTime?: boolean | undefined;
+    logoUri?: string;
+    policyUri?: string;
+    tosUri?: string;
+    contacts?: string[];
+    defaultMaxAge?: number;
+    requireAuthTime?: boolean;
     accessTokenLifetime: number;
     refreshTokenLifetime: number;
     idTokenLifetime: number;
     createdAt: Date;
     updatedAt: Date;
 }
-
 /**
  * Client registration input
  */
 export interface RegisterClientInput {
     client_name: string;
     redirect_uris: string[];
-    grant_types?: GrantType[] | undefined;
-    response_types?: string[] | undefined;
-    scope?: string | undefined;
-    token_endpoint_auth_method?: TokenEndpointAuthMethod | undefined;
-    logo_uri?: string | undefined;
-    policy_uri?: string | undefined;
-    tos_uri?: string | undefined;
-    contacts?: string[] | undefined;
+    grant_types?: GrantType[];
+    response_types?: string[];
+    scope?: string;
+    token_endpoint_auth_method?: TokenEndpointAuthMethod;
+    logo_uri?: string;
+    policy_uri?: string;
+    tos_uri?: string;
+    contacts?: string[];
 }
-
 /**
  * Client registration response
  */
 export interface RegisterClientResponse {
     client_id: string;
-    client_secret?: string | undefined;
+    client_secret?: string;
     client_id_issued_at: number;
-    client_secret_expires_at?: number | undefined;
+    client_secret_expires_at?: number;
     client_name: string;
     redirect_uris: string[];
     grant_types: GrantType[];
     response_types: string[];
     token_endpoint_auth_method: TokenEndpointAuthMethod;
 }
-
 /**
  * Authorization code entity
  */
@@ -121,15 +113,14 @@ export interface AuthorizationCode {
     userId: ObjectId;
     redirectUri: string;
     scope: string;
-    codeChallenge?: string | undefined;
-    codeChallengeMethod?: string | undefined;
-    nonce?: string | undefined;
-    state?: string | undefined;
+    codeChallenge?: string;
+    codeChallengeMethod?: string;
+    nonce?: string;
+    state?: string;
     expiresAt: Date;
-    usedAt?: Date | undefined;
+    usedAt?: Date;
     createdAt: Date;
 }
-
 /**
  * Refresh token entity
  */
@@ -141,12 +132,11 @@ export interface RefreshToken {
     scope: string;
     issuedAt: Date;
     expiresAt: Date;
-    revokedAt?: Date | undefined;
-    rotatedFromId?: ObjectId | undefined;
+    revokedAt?: Date;
+    rotatedFromId?: ObjectId;
     family: string;
     createdAt: Date;
 }
-
 /**
  * Access token record (for revocation tracking)
  */
@@ -158,9 +148,8 @@ export interface AccessTokenRecord {
     scope: string;
     issuedAt: Date;
     expiresAt: Date;
-    revokedAt?: Date | undefined;
+    revokedAt?: Date;
 }
-
 /**
  * User consent entity
  */
@@ -172,7 +161,6 @@ export interface UserConsent {
     grantedAt: Date;
     updatedAt: Date;
 }
-
 /**
  * Signing key entity for key rotation
  */
@@ -184,6 +172,7 @@ export interface SigningKey {
     privateKey: string;
     status: 'active' | 'rotated' | 'revoked';
     createdAt: Date;
-    rotatedAt?: Date | undefined;
-    expiresAt?: Date | undefined;
+    rotatedAt?: Date;
+    expiresAt?: Date;
 }
+//# sourceMappingURL=entities.d.ts.map

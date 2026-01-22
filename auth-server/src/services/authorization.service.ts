@@ -11,11 +11,11 @@ export interface AuthorizationParams {
     clientId: string;
     redirectUri: string;
     scope: string;
-    state?: string;
-    codeChallenge?: string;
-    codeChallengeMethod?: string;
-    nonce?: string;
-    prompt?: string;
+    state?: string | undefined;
+    codeChallenge?: string | undefined;
+    codeChallengeMethod?: string | undefined;
+    nonce?: string | undefined;
+    prompt?: string | undefined;
 }
 
 /**

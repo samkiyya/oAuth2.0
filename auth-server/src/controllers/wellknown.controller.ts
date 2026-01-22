@@ -8,7 +8,7 @@ import config from '../config/index.js';
  * GET /.well-known/openid-configuration
  */
 export async function getOpenIDConfiguration(
-    req: Request,
+    _req: Request,
     res: Response,
     next: NextFunction
 ): Promise<void> {
@@ -26,10 +26,10 @@ export async function getOpenIDConfiguration(
             introspection_endpoint: `${issuer}/introspect`,
             end_session_endpoint: `${issuer}/logout`,
 
-            scopes_supported: config.oauth.supportedScopes,
-            response_types_supported: config.oauth.supportedResponseTypes,
+            scopes_supported: [...config.oauth.supportedScopes],
+            response_types_supported: [...config.oauth.supportedResponseTypes],
             response_modes_supported: ['query'],
-            grant_types_supported: config.oauth.supportedGrantTypes,
+            grant_types_supported: [...config.oauth.supportedGrantTypes],
 
             subject_types_supported: ['public'],
 
@@ -54,7 +54,7 @@ export async function getOpenIDConfiguration(
                 'picture',
             ],
 
-            code_challenge_methods_supported: config.oauth.supportedCodeChallengeMethods,
+            code_challenge_methods_supported: [...config.oauth.supportedCodeChallengeMethods],
 
             // Additional metadata
             claims_parameter_supported: false,
@@ -72,7 +72,7 @@ export async function getOpenIDConfiguration(
  * JSON Web Key Set
  * GET /.well-known/jwks.json
  */
-export async function getJWKS(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function getJWKS(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
         const jwks = await keyService.getJWKS();
         res.json(jwks);

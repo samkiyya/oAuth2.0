@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { mfaService } from '../services/mfa.service.js';
 import { userRepository } from '../repositories/user.repository.js';
-import { logger } from '../utils/logger.js';
 
 /**
  * Get MFA setup page

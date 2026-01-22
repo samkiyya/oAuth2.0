@@ -3,11 +3,11 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import helmet from 'helmet';
-import { createClient } from 'redis';
-import RedisStore from 'connect-redis';
+import { Redis } from 'ioredis';
+import { RedisStore } from 'connect-redis';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import pinoHttp from 'pino-http';
+import { pinoHttp } from 'pino-http';
 import { createLogger } from '@oauth2/shared-utils';
 import config from './config/index.js';
 import routes from './routes/index.js';
@@ -17,7 +17,7 @@ const __dirname = path.dirname(__filename);
 
 const logger = createLogger({ name: 'client-app', level: config.logging.level });
 
-export async function createApp() {
+export async function createApp(): Promise<express.Express> {
     const app = express();
 
     // Trust proxy for rate limiting behind load balancer
@@ -45,12 +45,14 @@ export async function createApp() {
 
     // Request logging
     app.use(
-        pinoHttp({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (pinoHttp({
             logger,
             autoLogging: {
-                ignore: (req) => req.url === '/health',
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ignore: (req: any) => req.url === '/health',
             },
-        })
+        }) as any)
     );
 
     // Body parsing
@@ -63,9 +65,9 @@ export async function createApp() {
 
     if (config.redis.url) {
         try {
-            const redisClient = createClient({ url: config.redis.url });
-            await redisClient.connect();
-            sessionStore = new RedisStore({ client: redisClient, prefix: 'client:sess:' });
+            const redisClient = new Redis(config.redis.url);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            sessionStore = new (RedisStore as any)({ client: redisClient, prefix: 'client:sess:' });
             logger.info('Redis session store connected');
         } catch (error) {
             logger.warn({ error }, 'Failed to connect Redis, using memory store');
@@ -95,7 +97,7 @@ export async function createApp() {
     app.use('/', routes);
 
     // Health check
-    app.get('/health', (req, res) => {
+    app.get('/health', (_req, res) => {
         res.json({ status: 'healthy', service: 'client-app', timestamp: new Date().toISOString() });
     });
 

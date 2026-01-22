@@ -6,7 +6,7 @@ import { getRedis } from '../config/redis.js';
  * Health check endpoint
  * GET /health
  */
-export async function healthCheck(req: Request, res: Response): Promise<void> {
+export async function healthCheck(_req: Request, res: Response): Promise<void> {
     const checks = {
         status: 'healthy' as 'healthy' | 'unhealthy',
         timestamp: new Date().toISOString(),
@@ -48,7 +48,7 @@ export async function healthCheck(req: Request, res: Response): Promise<void> {
  * Liveness probe
  * GET /health/live
  */
-export function livenessProbe(req: Request, res: Response): void {
+export function livenessProbe(_req: Request, res: Response): void {
     res.status(200).json({ status: 'alive' });
 }
 
@@ -56,7 +56,7 @@ export function livenessProbe(req: Request, res: Response): void {
  * Readiness probe
  * GET /health/ready
  */
-export async function readinessProbe(req: Request, res: Response): Promise<void> {
+export async function readinessProbe(_req: Request, res: Response): Promise<void> {
     try {
         await getDb().admin().ping();
         await getRedis().ping();

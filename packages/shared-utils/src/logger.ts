@@ -8,16 +8,14 @@ export interface LoggerOptions {
 }
 
 export interface LogContext {
-    correlationId?: string;
-    userId?: string;
-    clientId?: string;
-    requestId?: string;
+    correlationId?: string | undefined;
+    userId?: string | undefined;
+    clientId?: string | undefined;
+    requestId?: string | undefined;
     [key: string]: unknown;
 }
 
-export type Logger = PinoLogger<string> & {
-    child: (bindings: LogContext) => Logger;
-};
+export type Logger = PinoLogger;
 
 /**
  * Create a structured logger with correlation ID support
@@ -36,10 +34,9 @@ export function createLogger(options: LoggerOptions): Logger {
         }
         : undefined;
 
-    return pino({
+    const pinoOptions: any = {
         name,
         level,
-        transport,
         formatters: {
             level: (label: string) => ({ level: label }),
         },
@@ -64,7 +61,13 @@ export function createLogger(options: LoggerOptions): Logger {
             ],
             censor: '[REDACTED]',
         },
-    }) as Logger;
+    };
+
+    if (transport) {
+        pinoOptions.transport = transport;
+    }
+
+    return pino(pinoOptions);
 }
 
 /**
@@ -89,11 +92,11 @@ export function withCorrelation(logger: Logger, correlationId?: string): Logger 
 export interface SecurityEvent {
     event: string;
     success: boolean;
-    userId?: string;
-    clientId?: string;
-    ipAddress?: string;
-    userAgent?: string;
-    details?: Record<string, unknown>;
+    userId?: string | undefined;
+    clientId?: string | undefined;
+    ipAddress?: string | undefined;
+    userAgent?: string | undefined;
+    details?: Record<string, unknown> | undefined;
 }
 
 export function logSecurityEvent(logger: Logger, event: SecurityEvent): void {

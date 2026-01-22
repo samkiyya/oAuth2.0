@@ -1,5 +1,4 @@
 import { ObjectId } from 'mongodb';
-import type { GrantType } from '@oauth2/shared-types';
 import { generateSecureRandomString, createLogger } from '@oauth2/shared-utils';
 import { getCollections } from '../config/database.js';
 import config from '../config/index.js';
@@ -15,11 +14,11 @@ export interface DeviceAuthorization {
     userCode: string;
     clientId: string;
     scope: string;
-    userId?: ObjectId;
+    userId?: ObjectId | undefined;
     status: 'pending' | 'authorized' | 'denied' | 'expired';
     expiresAt: Date;
     interval: number;
-    lastPolledAt?: Date;
+    lastPolledAt?: Date | undefined;
     createdAt: Date;
 }
 
@@ -165,8 +164,8 @@ export class DeviceFlowService {
         clientId: string
     ): Promise<{
         status: 'pending' | 'authorized' | 'denied' | 'expired' | 'slow_down';
-        userId?: ObjectId;
-        scope?: string;
+        userId?: ObjectId | undefined;
+        scope?: string | undefined;
     }> {
         const auth = await this.getByDeviceCode(deviceCode);
 
