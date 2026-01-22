@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import type { TokenResponse, OAuthClient, User } from '@oauth2/shared-types';
+import type { TokenResponse, OAuthClient, User, IntrospectionResponse } from '@oauth2/shared-types';
 import { OAuthErrors } from '@oauth2/shared-utils';
 import { tokenRepository } from '../repositories/token.repository.js';
 import { userRepository } from '../repositories/user.repository.js';
@@ -326,20 +326,8 @@ export class TokenService {
     async introspectToken(
         token: string,
         tokenTypeHint?: 'access_token' | 'refresh_token' | undefined
-    ): Promise<{
-        active: boolean;
-        scope?: string | undefined;
-        client_id?: string | undefined;
-        username?: string | undefined;
-        token_type?: string | undefined;
-        exp?: number | undefined;
-        iat?: number | undefined;
-        sub?: string | undefined;
-        aud?: string | string[] | undefined;
-        iss?: string | undefined;
-        jti?: string | undefined;
-    }> {
-        const inactiveResponse = { active: false };
+    ): Promise<IntrospectionResponse> {
+        const inactiveResponse: IntrospectionResponse = { active: false };
 
         // Check if it's a refresh token
         if (!tokenTypeHint || tokenTypeHint === 'refresh_token') {

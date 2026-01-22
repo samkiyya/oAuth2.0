@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import type { User, OAuthClient, AuthorizationCode } from '@oauth2/shared-types';
+import type { User, OAuthClient, AuthorizationCode, ResponseType, CodeChallengeMethod } from '@oauth2/shared-types';
 import { OAuthErrors, verifyCodeChallenge } from '@oauth2/shared-utils';
 import { tokenRepository } from '../repositories/token.repository.js';
 import { consentRepository } from '../repositories/consent.repository.js';
@@ -7,7 +7,7 @@ import config from '../config/index.js';
 import { logger, logSecurityEvent } from '../utils/logger.js';
 
 export interface AuthorizationParams {
-    responseType: string;
+    responseType: ResponseType;
     clientId: string;
     redirectUri: string;
     scope: string;
@@ -139,7 +139,7 @@ export class AuthorizationService {
                 throw OAuthErrors.invalidRequest('code_verifier is required');
             }
 
-            const method = (authCode.codeChallengeMethod ?? 'S256') as 'S256' | 'plain';
+            const method = (authCode.codeChallengeMethod ?? 'S256') as CodeChallengeMethod;
             if (!verifyCodeChallenge(codeVerifier, authCode.codeChallenge, method)) {
                 logSecurityEvent(logger, {
                     event: 'pkce_verification_failed',

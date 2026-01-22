@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import type { ResponseType, CodeChallengeMethod } from '@oauth2/shared-types';
 import { clientService } from '../services/client.service.js';
 import { authorizationService } from '../services/authorization.service.js';
 import { OAuthErrors } from '@oauth2/shared-utils';
@@ -16,13 +17,13 @@ export async function authorize(
         // Get parameters from query or pending auth
         const pendingAuth = req.session.pendingAuth;
         const params = {
-            responseType: (req.query.response_type as string) ?? pendingAuth?.clientId ? 'code' : '',
+            responseType: ((req.query.response_type as string) ?? pendingAuth?.clientId ? 'code' : '') as ResponseType,
             clientId: (req.query.client_id as string) ?? pendingAuth?.clientId ?? '',
             redirectUri: (req.query.redirect_uri as string) ?? pendingAuth?.redirectUri ?? '',
             scope: (req.query.scope as string) ?? pendingAuth?.scope ?? '',
             state: (req.query.state as string) ?? pendingAuth?.state,
             codeChallenge: (req.query.code_challenge as string) ?? pendingAuth?.codeChallenge,
-            codeChallengeMethod: (req.query.code_challenge_method as string) ?? pendingAuth?.codeChallengeMethod,
+            codeChallengeMethod: ((req.query.code_challenge_method as string) ?? pendingAuth?.codeChallengeMethod) as CodeChallengeMethod | undefined,
             nonce: (req.query.nonce as string) ?? pendingAuth?.nonce,
             prompt: req.query.prompt as string | undefined,
         };
@@ -193,13 +194,13 @@ export async function handleConsent(
         const scopes = clientService.validateScope(client, scope);
 
         const params = {
-            responseType: 'code',
+            responseType: 'code' as ResponseType,
             clientId,
             redirectUri,
             scope,
             state,
             codeChallenge,
-            codeChallengeMethod,
+            codeChallengeMethod: codeChallengeMethod as CodeChallengeMethod | undefined,
             nonce,
         };
 

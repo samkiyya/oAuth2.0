@@ -11,7 +11,7 @@
     "dev:client": "pnpm --filter client-app dev",
     "dev:resource": "pnpm --filter resource-server dev",
     "build": "pnpm -r build",
-    "build:packages": "pnpm --filter '@oauth2/*' build",
+    "build:packages": "pnpm --filter \"@oauth2/*\" build",
     "start": "pnpm -r start",
     "clean": "pnpm -r clean && rimraf node_modules",
     "typecheck": "pnpm -r typecheck",
